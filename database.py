@@ -78,6 +78,52 @@ def add_appliance(name, power, hours, quantity):
     conn.close()
 
 
+def delete_appliance(appliance_id):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM appliances WHERE id = ?", (appliance_id,))
+    conn.commit()
+    conn.close()
+
+
+def delete_all_appliances():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM appliances")
+    conn.commit()
+    conn.close()
+
+
+def add_generation_log(date, irradiance, generation_kwh, load_kwh):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        INSERT OR REPLACE INTO generation_logs (date, irradiance, actual_generation_kwh, load_consumed_kwh)
+        VALUES (?, ?, ?, ?)
+    """,
+        (date, irradiance, generation_kwh, load_kwh),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_generation_log(log_date):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM generation_logs WHERE date = ?", (log_date,))
+    conn.commit()
+    conn.close()
+
+
+def delete_all_generation_logs():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM generation_logs")
+    conn.commit()
+    conn.close()
+
+
 def get_all_appliances():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()

@@ -1,0 +1,144 @@
+[1mdiff --git a/app.py b/app.py[m
+[1mindex 5e02e6f..8ad9730 100644[m
+[1m--- a/app.py[m
+[1m+++ b/app.py[m
+[36m@@ -59,6 +59,13 @@[m [mif "live_data" not in st.session_state:[m
+ if "monitor_active" not in st.session_state:[m
+     st.session_state.monitor_active = False[m
+ [m
+[32m+[m[32mif "pending_delete_appliance_id" not in st.session_state:[m
+[32m+[m[32m    st.session_state.pending_delete_appliance_id = None[m
+[32m+[m[32m    st.session_state.pending_delete_appliance_name = ""[m
+[32m+[m
+[32m+[m[32mif "pending_delete_log_date" not in st.session_state:[m
+[32m+[m[32m    st.session_state.pending_delete_log_date = None[m
+[32m+[m
+ [m
+ if page == "Dashboard":[m
+     st.subheader("Dashboard Overview")[m
+[36m@@ -216,26 +223,86 @@[m [melif page == "Load Management":[m
+                 st.error("Please enter an appliance name.")[m
+ [m
+     if appliances:[m
+[31m-        df_appliances = pd.DataFrame(appliances)[m
+[31m-        df_appliances["daily_wh"] = ([m
+[31m-            df_appliances["power"] * df_appliances["hours"] * df_appliances["quantity"][m
+[31m-        )[m
+[31m-        st.dataframe([m
+[31m-            df_appliances[["name", "power", "hours", "quantity", "daily_wh"]].rename([m
+[31m-                columns={[m
+[31m-                    "name": "Appliance",[m
+[31m-                    "power": "Power (W)",[m
+[31m-                    "hours": "Hours/Day",[m
+[31m-                    "quantity": "Qty",[m
+[31m-                    "daily_wh": "Daily (Wh)",[m
+[31m-                }[m
+[32m+[m[32m        st.markdown("### Current Appliances")[m
+[32m+[m[32m        header_cols = st.columns([3, 1, 1, 1, 1, 1])[m
+[32m+[m[32m        header_cols[0].write("**Appliance**")[m
+[32m+[m[32m        header_cols[1].write("**Power (W)**")[m
+[32m+[m[32m        header_cols[2].write("**Hours/Day**")[m
+[32m+[m[32m        header_cols[3].write("**Qty**")[m
+[32m+[m[32m        header_cols[4].write("**Daily (Wh)**")[m
+[32m+[m[32m        header_cols[5].write("**Action**")[m
+[32m+[m
+[32m+[m[32m        for app in appliances:[m
+[32m+[m[32m            daily_wh = app["power"] * app["hours"] * app["quantity"][m
+[32m+[m[32m            row_cols = st.columns([3, 1, 1, 1, 1, 1])[m
+[32m+[m[32m            row_cols[0].write(app["name"])[m
+[32m+[m[32m            row_cols[1].write(f"{app['power']:.1f}")[m
+[32m+[m[32m            row_cols[2].write(f"{app['hours']:.1f}")[m
+[32m+[m[32m            row_cols[3].write(app["quantity"])[m
+[32m+[m[32m            row_cols[4].write(f"{daily_wh:.0f}")[m
+[32m+[m[32m            if row_cols[5].button("Delete", key=f"delete_app_{app['id']}"):[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_id = app["id"][m
+[32m+[m[32m                st.session_state.pending_delete_appliance_name = app["name"][m
+[32m+[m[32m                st.experimental_rerun()[m
+[32m+[m
+[32m+[m[32m        if st.session_state.pending_delete_appliance_id:[m
+[32m+[m[32m            st.warning([m
+[32m+[m[32m                f"Confirm deletion of '{st.session_state.pending_delete_appliance_name}'? This cannot be undone."[m
+             )[m
+[31m-        )[m
+[32m+[m[32m            confirm_cols = st.columns([1, 1])[m
+[32m+[m[32m            if confirm_cols[0].button("Confirm Delete Appliance"):[m
+[32m+[m[32m                db.delete_appliance(st.session_state.pending_delete_appliance_id)[m
+[32m+[m[32m                st.success(f"Deleted {st.session_state.pending_delete_appliance_name}.")[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_id = None[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_name = ""[m
+[32m+[m[32m                st.experimental_rerun()[m
+[32m+[m[32m            if confirm_cols[1].button("Cancel"):[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_id = None[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_name = ""[m
+[32m+[m[32m                st.experimental_rerun()[m
+[32m+[m
+[32m+[m[32m        st.markdown("---")[m
+[32m+[m[32m        if st.button("Delete All Appliances", type="secondary"):[m
+[32m+[m[32m            st.session_state.pending_delete_appliance_id = -1[m
+[32m+[m[32m            st.session_state.pending_delete_appliance_name = "all appliances"[m
+[32m+[m[32m            st.experimental_rerun()[m
+[32m+[m
+[32m+[m[32m        if st.session_state.pending_delete_appliance_id == -1:[m
+[32m+[m[32m            st.warning("Confirm deletion of ALL appliances? This cannot be undone.")[m
+[32m+[m[32m            delete_all_cols = st.columns([1, 1])[m
+[32m+[m[32m            if delete_all_cols[0].button("Confirm Delete All Appliances"):[m
+[32m+[m[32m                db.delete_all_appliances()[m
+[32m+[m[32m                st.success("Deleted all appliances.")[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_id = None[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_name = ""[m
+[32m+[m[32m                st.experimental_rerun()[m
+[32m+[m[32m            if delete_all_cols[1].button("Cancel", key="cancel_delete_all_appliances"):[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_id = None[m
+[32m+[m[32m                st.session_state.pending_delete_appliance_name = ""[m
+[32m+[m[32m                st.experimental_rerun()[m
+     else:[m
+         st.info("No appliance entries yet.")[m
+ [m
+ elif page == "Reports":[m
+     st.subheader("Historical Reports")[m
+[32m+[m[32m    with st.expander("Add New Generation Log"):[m
+[32m+[m[32m        log_date = st.date_input("Date")[m
+[32m+[m[32m        irradiance = st.number_input([m
+[32m+[m[32m            "Irradiance (kWh/m²)", min_value=0.0, step=0.1, format="%.2f"[m
+[32m+[m[32m        )[m
+[32m+[m[32m        generation = st.number_input([m
+[32m+[m[32m            "Generation (kWh)", min_value=0.0, step=0.1, format="%.2f"[m
+[32m+[m[32m        )[m
+[32m+[m[32m        load = st.number_input([m
+[32m+[m[32m            "Load Consumed (kWh)", min_value=0.0, step=0.1, format="%.2f"[m
+[32m+[m[32m        )[m
+[32m+[m[32m        if st.button("Save Log"):[m
+[32m+[m[32m            db.add_generation_log([m
+[32m+[m[32m                log_date.strftime("%Y-%m-%d"), irradiance, generation, load[m
+[32m+[m[32m            )[m
+[32m+[m[32m            st.success("Generation log added.")[m
+[32m+[m[32m            st.experimental_rerun()[m
+[32m+[m
+     if logs:[m
+         df_logs = pd.DataFrame([m
+             logs, columns=["date", "irradiance", "generation", "load"][m
+[36m@@ -244,11 +311,57 @@[m [melif page == "Reports":[m
+             columns={"generation": "actual_generation_kwh", "load": "load_consumed_kwh"}[m
+         )[m
+         st.table(df_logs)[m
+[32m+[m
+[32m+[m[32m        st.markdown("### Delete Log Entry")[m
+[32m+[m[32m        for log in logs:[m
+[32m+[m[32m            delete_cols = st.columns([3, 1, 1, 1, 1])[m
+[32m+[m[32m            delete_cols[0].write(log[0])[m
+[32m+[m[32m            delete_cols[1].write(f"{log[1]:.2f}")[m
+[32m+[m[32m            delete_cols[2].write(f"{log[2]:.2f}")[m
+[32m+[m[32m            delete_cols[3].write(f"{log[3]:.2f}")[m
+[32m+[m[32m            if delete_cols[4].button("Delete", key=f"delete_log_{log[0]}"):[m
+[32m+[m[32m                st.session_state.pending_delete_log_date = log[0][m
+[32m+[m[32m                st.experimental_rerun()[m
+[32m+[m
+[32m+[m[32m        st.markdown("---")[m
+[32m+[m[32m        if st.button("Delete All Logs", type="secondary"):[m
+[32m+[m[32m            st.session_state.pending_delete_log_date = "ALL"[m
+[32m+[m[32m            st.experimental_rerun()[m
+[32m+[m
+[32m+[m[32m        if st.session_state.pending_delete_log_date:[m
+[32m+[m[32m            if st.session_state.pending_delete_log_date == "ALL":[m
+[32m+[m[32m                st.warning([m
+[32m+[m[32m                    "Confirm deletion of ALL generation logs?
