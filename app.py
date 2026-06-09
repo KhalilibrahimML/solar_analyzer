@@ -171,7 +171,7 @@ elif page == "Real-time Monitor":
                 st.session_state.monitor_active = True
 
         if st.session_state.monitor_active:
-            st.experimental_rerun()
+            st.rerun()
 
         if st.session_state.monitor_active:
             point = simulate_live_point()
@@ -218,7 +218,7 @@ elif page == "Load Management":
             if name:
                 db.add_appliance(name, power, hours, quantity)
                 st.success(f"Added {name}.")
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Please enter an appliance name.")
 
@@ -243,7 +243,7 @@ elif page == "Load Management":
             if row_cols[5].button("Delete", key=f"delete_app_{app['id']}"):
                 st.session_state.pending_delete_appliance_id = app["id"]
                 st.session_state.pending_delete_appliance_name = app["name"]
-                st.experimental_rerun()
+                st.rerun()
 
         if st.session_state.pending_delete_appliance_id:
             st.warning(
@@ -255,17 +255,17 @@ elif page == "Load Management":
                 st.success(f"Deleted {st.session_state.pending_delete_appliance_name}.")
                 st.session_state.pending_delete_appliance_id = None
                 st.session_state.pending_delete_appliance_name = ""
-                st.experimental_rerun()
+                st.rerun()
             if confirm_cols[1].button("Cancel"):
                 st.session_state.pending_delete_appliance_id = None
                 st.session_state.pending_delete_appliance_name = ""
-                st.experimental_rerun()
+                st.rerun()
 
         st.markdown("---")
         if st.button("Delete All Appliances", type="secondary"):
             st.session_state.pending_delete_appliance_id = -1
             st.session_state.pending_delete_appliance_name = "all appliances"
-            st.experimental_rerun()
+            st.rerun()
 
         if st.session_state.pending_delete_appliance_id == -1:
             st.warning("Confirm deletion of ALL appliances? This cannot be undone.")
@@ -275,11 +275,11 @@ elif page == "Load Management":
                 st.success("Deleted all appliances.")
                 st.session_state.pending_delete_appliance_id = None
                 st.session_state.pending_delete_appliance_name = ""
-                st.experimental_rerun()
+                st.rerun()
             if delete_all_cols[1].button("Cancel", key="cancel_delete_all_appliances"):
                 st.session_state.pending_delete_appliance_id = None
                 st.session_state.pending_delete_appliance_name = ""
-                st.experimental_rerun()
+                st.rerun()
     else:
         st.info("No appliance entries yet.")
 
@@ -301,7 +301,7 @@ elif page == "Reports":
                 log_date.strftime("%Y-%m-%d"), irradiance, generation, load
             )
             st.success("Generation log added.")
-            st.experimental_rerun()
+            st.rerun()
 
     if logs:
         df_logs = pd.DataFrame(
@@ -321,12 +321,12 @@ elif page == "Reports":
             delete_cols[3].write(f"{log[3]:.2f}")
             if delete_cols[4].button("Delete", key=f"delete_log_{log[0]}"):
                 st.session_state.pending_delete_log_date = log[0]
-                st.experimental_rerun()
+                st.rerun()
 
         st.markdown("---")
         if st.button("Delete All Logs", type="secondary"):
             st.session_state.pending_delete_log_date = "ALL"
-            st.experimental_rerun()
+            st.rerun()
 
         if st.session_state.pending_delete_log_date:
             if st.session_state.pending_delete_log_date == "ALL":
@@ -338,10 +338,10 @@ elif page == "Reports":
                     db.delete_all_generation_logs()
                     st.success("Deleted all logs.")
                     st.session_state.pending_delete_log_date = None
-                    st.experimental_rerun()
+                    st.rerun()
                 if log_confirm_cols[1].button("Cancel", key="cancel_delete_all_logs"):
                     st.session_state.pending_delete_log_date = None
-                    st.experimental_rerun()
+                    st.rerun()
             else:
                 st.warning(
                     f"Delete generation log for {st.session_state.pending_delete_log_date}? This action cannot be undone."
@@ -353,10 +353,10 @@ elif page == "Reports":
                         f"Deleted log {st.session_state.pending_delete_log_date}."
                     )
                     st.session_state.pending_delete_log_date = None
-                    st.experimental_rerun()
+                    st.rerun()
                 if log_confirm_cols[1].button("Cancel", key="cancel_delete_log"):
                     st.session_state.pending_delete_log_date = None
-                    st.experimental_rerun()
+                    st.rerun()
 
         st.line_chart(
             df_logs.set_index("date")[["actual_generation_kwh", "load_consumed_kwh"]]
