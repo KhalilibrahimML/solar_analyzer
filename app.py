@@ -28,6 +28,15 @@ page = st.sidebar.radio(
     ["Dashboard", "System Analysis", "Real-time Monitor", "Load Management", "Reports"],
 )
 
+with st.sidebar.expander("Gemini AI", expanded=False):
+    st.text_input(
+        "GEMINI_API_KEY",
+        type="password",
+        key="gemini_api_key",
+        help="Paste your Gemini API key here if it is not already set in your environment or Streamlit secrets.",
+    )
+    st.caption("Stored only in the current Streamlit session.")
+
 # Load project data
 appliances = db.get_all_appliances()
 logs = db.get_generation_logs()
@@ -49,6 +58,7 @@ def ensure_session_defaults():
         st.session_state.setdefault(key, value)
     st.session_state.setdefault("ai_optimization_report", "")
     st.session_state.setdefault("ai_optimization_error", "")
+    st.session_state.setdefault("gemini_api_key", os.getenv("GEMINI_API_KEY", ""))
 
 
 def get_system_settings():
@@ -159,6 +169,9 @@ def build_optimization_prompt(appliance_rows, system_settings, profile):
 
 
 def get_gemini_api_key():
+    if st.session_state.get("gemini_api_key"):
+        return st.session_state.get("gemini_api_key")
+
     api_key = os.getenv("GEMINI_API_KEY")
     if api_key:
         return api_key
