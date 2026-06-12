@@ -9,6 +9,8 @@ py -m pip install -r requirements.txt
 py -m streamlit run app.py
 ```
 
+Optional: set `GEMINI_API_KEY` in your environment or Streamlit secrets if you want the "Analyze with AI" button to return Gemini optimization tips.
+
 ## Deploy via GitHub + Streamlit Cloud
 
 1. Commit and push this repo to GitHub.

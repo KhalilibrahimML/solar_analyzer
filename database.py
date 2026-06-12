@@ -78,6 +78,21 @@ def add_appliance(name, power, hours, quantity):
     conn.close()
 
 
+def update_appliance(appliance_id, name, power, hours, quantity):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE appliances
+        SET name = ?, power = ?, hours = ?, quantity = ?
+        WHERE id = ?
+    """,
+        (name, power, hours, quantity, appliance_id),
+    )
+    conn.commit()
+    conn.close()
+
+
 def delete_appliance(appliance_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -127,7 +142,7 @@ def delete_all_generation_logs():
 def get_all_appliances():
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM appliances")
+    cursor.execute("SELECT * FROM appliances ORDER BY id ASC")
     rows = cursor.fetchall()
     conn.close()
     return [
